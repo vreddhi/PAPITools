@@ -1,0 +1,192 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module papitools</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>papitools</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/Users/vbhat/PAPI_Work/PAPIWrapper/papitools.py">/Users/vbhat/PAPI_Work/PAPIWrapper/papitools.py</a></font></td></tr></table>
+    <p></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="json.html">json</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="papitools.html#PAPIWrapper">PAPIWrapper</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="PAPIWrapper">class <strong>PAPIWrapper</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>All&nbsp;basic&nbsp;operations&nbsp;that&nbsp;can&nbsp;be&nbsp;performed&nbsp;using&nbsp;PAPI<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="PAPIWrapper-__init__"><strong>__init__</strong></a>(self, access_hostname, property_name<font color="#909090">='yetToFind'</font>, version<font color="#909090">='yetToFind'</font>, notes<font color="#909090">='yetToFind'</font>, emails<font color="#909090">='yetToFind'</font>, groupId<font color="#909090">='yetToFind'</font>, contractId<font color="#909090">='yetToFind'</font>, propertyId<font color="#909090">='yetToFind'</font>)</dt></dl>
+
+<dl><dt><a name="PAPIWrapper-activateConfiguration"><strong>activateConfiguration</strong></a>(self, session, property_name, version, network, emailList, notes)</dt><dd><tt>Function&nbsp;to&nbsp;activate&nbsp;a&nbsp;configuration&nbsp;or&nbsp;property<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+session&nbsp;:&nbsp;session<br>
+&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;akamai&nbsp;session&nbsp;<a href="__builtin__.html#object">object</a><br>
+property_name:&nbsp;property_name<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Property&nbsp;or&nbsp;configuration&nbsp;name<br>
+version&nbsp;:&nbsp;version<br>
+&nbsp;&nbsp;&nbsp;&nbsp;version&nbsp;number&nbsp;to&nbsp;be&nbsp;activated<br>
+network&nbsp;:&nbsp;network<br>
+&nbsp;&nbsp;&nbsp;&nbsp;network&nbsp;type&nbsp;on&nbsp;which&nbsp;configuration&nbsp;has&nbsp;to&nbsp;be&nbsp;activated&nbsp;on<br>
+emailList&nbsp;:&nbsp;emailList<br>
+&nbsp;&nbsp;&nbsp;&nbsp;List&nbsp;of&nbsp;emailIds&nbsp;separated&nbsp;by&nbsp;comma&nbsp;to&nbsp;be&nbsp;notified<br>
+notes&nbsp;:&nbsp;notes<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Notes&nbsp;that&nbsp;describes&nbsp;the&nbsp;activation&nbsp;reason<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+activationResponse&nbsp;:&nbsp;activationResponse<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(activationResponse)&nbsp;Object&nbsp;with&nbsp;all&nbsp;response&nbsp;details.</tt></dd></dl>
+
+<dl><dt><a name="PAPIWrapper-createVersion"><strong>createVersion</strong></a>(self, session, baseVersion, property_name)</dt><dd><tt>Function&nbsp;to&nbsp;create&nbsp;or&nbsp;checkout&nbsp;a&nbsp;version&nbsp;of&nbsp;property<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+session&nbsp;:&nbsp;session<br>
+&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;akamai&nbsp;session&nbsp;<a href="__builtin__.html#object">object</a><br>
+baseVersion&nbsp;:&nbsp;baseVersion<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Property&nbsp;or&nbsp;configuration&nbsp;version&nbsp;number&nbsp;to&nbsp;checkout&nbsp;from<br>
+property_name:&nbsp;property_name<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Property&nbsp;or&nbsp;configuration&nbsp;name<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+createVersionResponse&nbsp;:&nbsp;createVersionResponse<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(createVersionResponse)&nbsp;Object&nbsp;with&nbsp;all&nbsp;response&nbsp;details.</tt></dd></dl>
+
+<dl><dt><a name="PAPIWrapper-getGroups"><strong>getGroups</strong></a>(self, session)</dt><dd><tt>Function&nbsp;to&nbsp;fetch&nbsp;all&nbsp;the&nbsp;groups&nbsp;under&nbsp;the&nbsp;contract<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+session&nbsp;:&nbsp;session<br>
+&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;akamai&nbsp;session&nbsp;<a href="__builtin__.html#object">object</a><br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+groupResponse&nbsp;:&nbsp;groupResponse<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(groupResponse)&nbsp;Object&nbsp;with&nbsp;all&nbsp;response&nbsp;details.</tt></dd></dl>
+
+<dl><dt><a name="PAPIWrapper-getPropertyInfo"><strong>getPropertyInfo</strong></a>(self, session, property_name)</dt><dd><tt>Function&nbsp;to&nbsp;fetch&nbsp;property&nbsp;ID&nbsp;and&nbsp;update&nbsp;the&nbsp;proerty&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;corresponding&nbsp;values<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+session&nbsp;:&nbsp;session<br>
+&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;akamai&nbsp;session&nbsp;<a href="__builtin__.html#object">object</a><br>
+property_name:&nbsp;property_name<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Property&nbsp;or&nbsp;configuration&nbsp;name<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+self&nbsp;:&nbsp;self<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(<a href="#PAPIWrapper">PAPIWrapper</a>)&nbsp;Object&nbsp;with&nbsp;propertyId,&nbsp;contractId&nbsp;and&nbsp;groupId&nbsp;as&nbsp;attributes</tt></dd></dl>
+
+<dl><dt><a name="PAPIWrapper-getPropertyRules"><strong>getPropertyRules</strong></a>(self, session, property_name, version)</dt><dd><tt>Function&nbsp;to&nbsp;download&nbsp;rules&nbsp;from&nbsp;a&nbsp;property<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+session&nbsp;:&nbsp;session<br>
+&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;akamai&nbsp;session&nbsp;<a href="__builtin__.html#object">object</a><br>
+property_name:&nbsp;property_name<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Property&nbsp;or&nbsp;configuration&nbsp;name<br>
+version&nbsp;:&nbsp;version<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Property&nbsp;orconfiguration&nbsp;version&nbsp;number<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+rulesResponse&nbsp;:&nbsp;rulesResponse<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(rulesResponse)&nbsp;Object&nbsp;with&nbsp;all&nbsp;response&nbsp;details.</tt></dd></dl>
+
+<dl><dt><a name="PAPIWrapper-getVersion"><strong>getVersion</strong></a>(self, session, property_name, activeOn<font color="#909090">='LATEST'</font>)</dt><dd><tt>Function&nbsp;to&nbsp;get&nbsp;the&nbsp;latest&nbsp;or&nbsp;staging&nbsp;or&nbsp;production&nbsp;version<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+session&nbsp;:&nbsp;session<br>
+&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;akamai&nbsp;session&nbsp;<a href="__builtin__.html#object">object</a><br>
+activeOn&nbsp;:&nbsp;activeOn<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Network&nbsp;Type&nbsp;(STAGING&nbsp;OR&nbsp;PRODUCTION)&nbsp;or&nbsp;the&nbsp;LATEST&nbsp;Version<br>
+property_name:&nbsp;property_name<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Property&nbsp;or&nbsp;configuration&nbsp;name<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+VersionResponse&nbsp;:&nbsp;VersionResponse<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(VersionResponse)&nbsp;Object&nbsp;with&nbsp;all&nbsp;response&nbsp;details.</tt></dd></dl>
+
+<dl><dt><a name="PAPIWrapper-uploadRules"><strong>uploadRules</strong></a>(self, session, updatedData, property_name, version)</dt><dd><tt>Function&nbsp;to&nbsp;upload&nbsp;rules&nbsp;to&nbsp;a&nbsp;property<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+session&nbsp;:&nbsp;session<br>
+&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;akamai&nbsp;session&nbsp;<a href="__builtin__.html#object">object</a><br>
+updatedData&nbsp;:&nbsp;updatedData<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Complete&nbsp;JSON&nbsp;rules&nbsp;dataset&nbsp;to&nbsp;be&nbsp;uploaded<br>
+property_name:&nbsp;property_name<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Property&nbsp;or&nbsp;configuration&nbsp;name<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+updateResponse&nbsp;:&nbsp;updateResponse<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(updateResponse)&nbsp;Object&nbsp;with&nbsp;all&nbsp;response&nbsp;details.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>access_hostname</strong> = 'yetToFind'</dl>
+
+<dl><dt><strong>contractId</strong> = 'yetToFind'</dl>
+
+<dl><dt><strong>emails</strong> = 'yetToFind'</dl>
+
+<dl><dt><strong>final_response</strong> = 'NULL'</dl>
+
+<dl><dt><strong>groupId</strong> = 'yetToFind'</dl>
+
+<dl><dt><strong>headers</strong> = {'Content-Type': 'application/json'}</dl>
+
+<dl><dt><strong>notes</strong> = 'yetToFind'</dl>
+
+<dl><dt><strong>propertyId</strong> = 'yetToFind'</dl>
+
+<dl><dt><strong>property_name</strong> = 'yetToFind'</dl>
+
+<dl><dt><strong>version</strong> = 'yetToFind'</dl>
+
+</td></tr></table></td></tr></table>
+</body></html>
