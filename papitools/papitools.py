@@ -1,5 +1,8 @@
 import json
 
+
+__all__=['Papitools']
+
 class Papitools(object):
     """All basic operations that can be performed using PAPI """
 

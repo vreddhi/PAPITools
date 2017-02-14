@@ -1,4 +1,4 @@
-import PAPIWrapper
+from papitools import papitools
 import configparser
 import requests, logging, json, sys
 from akamai.edgegrid import EdgeGridAuth
@@ -9,10 +9,18 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-act","--activate", help="Activate configuration specified in property_name in .config.txt", action="store_true")
-parser.add_argument("-copy","--copyrules", help="Used to copy source configuration to destination configuration", action="store_true")
+parser.add_argument("-copy","--copyConfig", help="Used to copy source configuration to destination configuration", action="store_true")
+parser.add_argument("-config","--Configuration", help="Name of Configuration/Property")
+parser.add_argument("-ver","--Version", help="Version of Configuration/Property")
+parser.add_argument("-net","--network", help="Network to be activated on")
+parser.add_argument("-fconfig","--fromConfiguration", help="Name of fromConfiguration")
+parser.add_argument("-tconfig","--toConfiguration", help="Name of toConfiguration")
+parser.add_argument("-fver","--fromVersion", help="Config version of fromConfiguration")
+parser.add_argument("-tver","--toVersion", help="Config version of toConfiguration")
 parser.add_argument("-d","--download", help="Download configuration and display JSON in console", action="store_true")
-parser.add_argument("-ar","--addredirects", help="Append Redirect Rules", action="store_true")
+parser.add_argument("-ar","--addredirects", help="Append Redirect Rules from a csv File", action="store_true")
 parser.add_argument("-pc","--propertyCount", help="Count properties", action="store_true")
+parser.add_argument("-fmp","--ForwardPath", help="Add FMP Rules from a csv File", action="store_true")
 args = parser.parse_args()
 
 
@@ -20,10 +28,6 @@ args = parser.parse_args()
 try:
     config = configparser.ConfigParser()
     config.read('.config.txt')
-    property_name = config['PROPERTY']['property_name']
-    version = config['PROPERTY']['version']
-    notes = config['PROPERTY']['notes']
-    emails = config['PROPERTY']['emails']
     client_token = config['CREDENTIALS']['client_token']
     client_secret = config['CREDENTIALS']['client_secret']
     access_token = config['CREDENTIALS']['access_token']
@@ -38,7 +42,9 @@ except (NameError,AttributeError):
     print("\nUse -h to know the options to run program\n")
     exit()
 
-if not args.copyrules and not args.download and not args.activate and not args.addredirects and not args.propertyCount:
+if not args.copyConfig and not args.download and not args.activate and not args.addredirects and not \
+    args.propertyCount and not args.ForwardPath and not args.fromConfiguration and not args.toConfiguration and not \
+    args.fromVersion and not args.toVersion and not args.Configuration and not args.Version and not args.network:
     print("\nUse -h to know the options to run program\n")
     exit()
 
@@ -46,29 +52,38 @@ if not args.copyrules and not args.download and not args.activate and not args.a
 if args.activate:
     print("\nHang on... while we activate configuration.. This will take time..\n")
     print("\nSetting up the pre-requisites...\n")
-    PAPIWrapperObject = PAPIWrapper.PAPIWrapper(access_hostname)
+    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
     print("\nTrying to activate configuration..\n")
-    network = "STAGING"
-    activationResponseObj = PAPIWrapperObject.activateConfiguration(session, property_name, version, network, emails, notes)
+    property_name = args.Configuration
+    version = args.Version
+    network = args.network
+    activationResponseObj = PapiToolsObject.activateConfiguration(session, property_name, version, network, emails, notes)
 
 
-if args.copyrules:
+if args.copyConfig:
     #Initialise Source Property Information
     print("\nHang on... while we copy rules.. This will take time..")
-    PAPIToolsObject = PAPIWrapper.PAPIWrapper(access_hostname=access_hostname)
-    sourceRulesObject = PAPIToolsObject.getPropertyRules(session,property_name,version)
-    sourcePropertyRules = PAPIWrapperObject.getPropertyRules(session, sourcePropertyObject).json()['rules']
+    fromVersion = args.fromVersion
+    toVersion = args.toVersion
+    fromConfiguration = args.fromConfiguration
+    toConfiguration = args.toConfiguration
+    if fromVersion is None or toVersion is None or fromConfiguration is None or toConfiguration is None:
+        print('\nMandatory arguments missing\n')
+        exit()
+    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    fromRulesObject = PapiToolsObject.getPropertyRules(session, fromConfiguration, fromVersion)
+    if fromRulesObject.status_code != 200:
+        print(fromRulesObject.json())
+        exit()
+    fromPropertyRules = fromRulesObject.json()['rules']
     #Initialise destination Property Information
-    destPropertyObject = PropertyDetails.Property(dest_access_hostname, dest_property_name, dest_version, dest_notes, dest_emails)
-    destGroupsInfo = PAPIWrapperObject.getGroups(destSession, destPropertyObject)
-    PAPIWrapperObject.getPropertyInfo(destSession, destPropertyObject, destGroupsInfo)
-    destPropertyRules = PAPIWrapperObject.getPropertyRules(destSession, destPropertyObject).json()
-    destPropertyRules['rules'] = sourcePropertyRules
-    PAPIWrapperObject.uploadRules(destSession, destPropertyObject, destPropertyRules)
+    toPropertyDetails = PapiToolsObject.getPropertyRules(session, toConfiguration, toVersion).json()
+    toPropertyDetails['rules'] = fromPropertyRules
+    PapiToolsObject.uploadRules(session, toPropertyDetails, toConfiguration, toVersion)
 
 if args.download:
     print("\nSetting up the pre-requisites...\n")
-    PapiToolsObject = Papitools.Papitools(access_hostname=access_hostname)
+    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
     print("\nHang on... while we download the json data.. ")
     print("\nHang on... We are almost set, fetching the rules now.. This will take time..\n")
     rulesObject = PapiToolsObject.getPropertyRules(session,property_name,version)
@@ -89,6 +104,21 @@ if args.addredirects:
     destPropertyRules['rules']['children'].append(redirectJsonData)
     print("\nHang on... We are almost set, Updating with the rules now.. This will again take time..\n")
     updateObjectResponse = PAPIWrapperObject.uploadRules(destSession, destPropertyObject, destPropertyRules)
+
+if args.ForwardPath:
+    csvTojsonObj = csvTojsonParser.optionSelector()
+    print("\nConvert csv to Json is finished.. ")
+    print("\nSetting up the pre-requisites...\n")
+    FMPJsonData = csvTojsonObj.parseCSVFile()
+    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    print("\nHang on... while we download the json data.. ")
+    print("\nHang on... We are almost set, fetching the rules now.. This will take time..\n")
+    propertyRules = PapiToolsObject.getPropertyRules(session,property_name,version).json()
+    print(json.dumps(propertyRules))
+    propertyRules['rules']['children'].append(FMPJsonData)
+    print("\nHang on... We are almost set, Updating with the rules now.. This will again take time..\n")
+    updateObjectResponse = PapiToolsObject.uploadRules(session, propertyRules,property_name, version)
+    print(updateObjectResponse.json())
 
 
 if args.propertyCount:
