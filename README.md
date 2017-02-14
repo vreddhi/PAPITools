@@ -3,7 +3,7 @@ This is a wrapper to PAPI framework at akamai
 
 import the module using pip install papitools
  
-Module has below methods or functionalities:
+**Module has below methods or functionalities:**
  
 
 ·getPropertyRules  -- Downloads the configuration in JSON format
