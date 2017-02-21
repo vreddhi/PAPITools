@@ -31,6 +31,23 @@ class Papitools(object):
         self.contractId = contractId
         self.propertyId = propertyId
 
+    def getContracts(self,session):
+        """
+        Function to fetch all contracts
+
+        Parameters
+        -----------
+        session : <string>
+            An EdgeGrid Auth akamai session object
+
+        Returns
+        -------
+        contractsResponse : contractsResponse
+            (contractsResponse) Object with all details
+        """
+        contractsUrl = 'https://' + self.access_hostname + '/papi/v0/contracts/'
+        contractsResponse = session.get(contractsUrl)
+        return contractsResponse
 
     def getPropertyInfo(self,session,property_name):
         """
@@ -101,6 +118,24 @@ class Papitools(object):
         else:
             self.final_response = "FAILURE"
 
+    def getAllProperties(self,session,contractId,groupId):
+        """
+        Function to fetch list of all properties under the group
+
+        Parameters
+        ----------
+        session : <string>
+            An EdgeGrid Auth akamai session object
+
+        Returns
+        -------
+        allProperties : <dict>
+            A dictionarty containing name, propertyId, contractId and groupId of all properties under the customer account
+        """
+        url = 'https://' + self.access_hostname + '/papi/v0/properties/?contractId=' + contractId +'&groupId=' + groupId
+        propertiesResponse = session.get(url)
+        return propertiesResponse
+
     def getPropertyRules(self,session,property_name,version):
         """
         Function to download rules from a property
@@ -122,6 +157,33 @@ class Papitools(object):
 
         self.getPropertyInfo(session, property_name)
         rulesUrl = 'https://' + self.access_hostname  + '/papi/v0/properties/' + self.propertyId +'/versions/'+str(version)+'/rules/?contractId='+ self.contractId +'&groupId='+ self.groupId
+        rulesResponse = session.get(rulesUrl)
+        if rulesResponse.status_code == 200:
+            self.final_response = "SUCCESS"
+        else:
+            self.final_response = rulesResponse.json()['detail']
+        return rulesResponse
+
+    def getPropertyRulesfromPropertyId(self,session,propertyId,version,contractId,groupId):
+        """
+        Function to download rules from a property
+
+        Parameters
+        ----------
+        session : <string>
+            An EdgeGrid Auth akamai session object
+        property_name: <string>
+            Property or configuration name
+        version : <int>
+            Property orconfiguration version number
+
+        Returns
+        -------
+        rulesResponse : rulesResponse
+            (rulesResponse) Object with all response details.
+        """
+
+        rulesUrl = 'https://' + self.access_hostname  + '/papi/v0/properties/' + propertyId +'/versions/'+str(version)+'/rules/?contractId='+ contractId +'&groupId='+ groupId
         rulesResponse = session.get(rulesUrl)
         if rulesResponse.status_code == 200:
             self.final_response = "SUCCESS"
@@ -297,3 +359,81 @@ class Papitools(object):
             self.final_response = "FAILURE"
             print("Looks like there is some error in configuration. Unable to activate configuration at this moment\n")
             return activationResponse
+
+    def cloneConfig(self,session,property_name,new_property_name,version):
+        """
+        Function to Clone a configuration
+
+        Parameters
+        ----------
+        session : <string>
+            An EdgeGrid Auth akamai session object
+        property_name: <string>
+            Property or configuration name
+        new_property_name: <string>
+            Destination/New Property or configuration name
+        version: <int>
+            Property version to refer OR base from
+
+        Returns
+        -------
+        cloneResponse : cloneResponse
+            (cloneResponse) Object with all response details.
+        """
+
+        self.getPropertyInfo(session, property_name)
+        versionUrl = 'https://' + self.access_hostname  + '/papi/v0/properties/'+ self.propertyId + "/versions/" + '?contractId=' + self.contractId +'&groupId=' + self.groupId
+        productId = ''
+        versionEtag = ''
+        versionResponse = session.get(versionUrl)
+        for eachItem in versionResponse.json()['versions']['items']:
+            if str(eachItem['propertyVersion']) == str(version):
+                versionEtag = eachItem['etag']
+                productId = eachItem['productId']
+
+        cloneData = """
+        {
+            "productId"    : "%s",
+            "propertyName" : "%s",
+            "cloneFrom": {
+                "propertyId"    : "%s",
+                "version"       : %s,
+                "copyHostnames" : false,
+                "cloneFromVersionEtag" : "%s"
+            }
+        }
+        """ % (productId,new_property_name,self.propertyId,version,versionEtag)
+
+        cloneUrl = 'https://' + self.access_hostname  + '/papi/v0/properties/?contractId=' + self.contractId +'&groupId=' + self.groupId
+        cloneResponse = session.post(cloneUrl, data=cloneData, headers=self.headers)
+        return cloneResponse
+
+    def deleteProperty(self,session,property_name):
+        """
+        Function to delete a property
+
+        Parameters
+        ----------
+        session : <string>
+            An EdgeGrid Auth akamai session object
+        property_name: <string>
+            Property or configuration name
+
+        Returns
+        -------
+        deleteResponse : deleteResponse
+            (deleteResponse) Object with all response details.
+        """
+
+        self.getPropertyInfo(session, property_name)
+        deleteurl = 'https://' + self.access_hostname  + '/papi/v0/properties/'+ self.propertyId + '?contractId=' + self.contractId +'&groupId=' + self.groupId
+        deleteResponse = session.delete(deleteurl)
+        if deleteResponse.status_code == 403:
+            self.final_response == "FAILURE"
+        elif deleteResponse.status_code == 404:
+            self.final_response == "FAILURE"
+        elif deleteResponse.status_code == 200:
+            self.final_response == "SUCCESS"
+        else:
+            self.final_response == "FAILURE"
+        return deleteResponse
