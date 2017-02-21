@@ -25,4 +25,4 @@ import the module using pip install papitools
  
  
 **Example command to copy configurations:**
-Python3 CustomPAPIActions.py -copy -fconfig="app-ssl-master.example.com_pm" -tconfig="app-ssl.cloud-test1.example.com" -fver=2 -tver=2
+Python3 CustomPAPIActions.py -copy -fconfig="source_config" -tconfig="destination_config" -fver=2 -tver=2
