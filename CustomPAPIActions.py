@@ -24,7 +24,7 @@ parser.add_argument("-pc","--propertyCount", help="Count properties", action="st
 parser.add_argument("-fmp","--ForwardPath", help="Add FMP Rules from a csv File", action="store_true")
 parser.add_argument("-clone","--cloneConfig", help="Clone a configuration", action="store_true")
 parser.add_argument("-delete","--deleteProperty", help="Delete a configuration", action="store_true")
-parser.add_argument("-ac","--advancedCheck", help="Check advanced matches", action="store_true")
+parser.add_argument("-fetchadvanced","--advancedCheck", help="Check advanced matches", action="store_true")
 args = parser.parse_args()
 
 
@@ -224,5 +224,5 @@ if args.advancedCheck:
                     except KeyError:
                         print("Looks like there are no rules other than default rule")
         except KeyError:
-            print('Looks like No contract or group ID was fetched')
+            print('Looks like No contract or group ID was fetched in one of the group Response')
     filehandler.writeData(filehandler.div_start_data)
