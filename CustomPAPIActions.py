@@ -1,33 +1,37 @@
-from papitools import papitools
+import papitools
 import configparser
 import requests, logging, json, sys
 from akamai.edgegrid import EdgeGridAuth
 import urllib
 import json
 import argparse
+import generateHtml
 #Program start here
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-act","--activate", help="Activate configuration specified in property_name in .config.txt", action="store_true")
 parser.add_argument("-copy","--copyConfig", help="Used to copy source configuration to destination configuration", action="store_true")
 parser.add_argument("-config","--Configuration", help="Name of Configuration/Property")
-parser.add_argument("-ver","--Version", help="Version of Configuration/Property")
-parser.add_argument("-net","--network", help="Network to be activated on")
-parser.add_argument("-fconfig","--fromConfiguration", help="Name of fromConfiguration")
-parser.add_argument("-tconfig","--toConfiguration", help="Name of toConfiguration")
-parser.add_argument("-fver","--fromVersion", help="Config version of fromConfiguration")
-parser.add_argument("-tver","--toVersion", help="Config version of toConfiguration")
+parser.add_argument("-version","--Version", help="Version of Configuration/Property")
+parser.add_argument("-network","--network", help="Network to be activated on")
+parser.add_argument("-src_config","--fromConfiguration", help="Name of fromConfiguration")
+parser.add_argument("-dest_config","--toConfiguration", help="Name of toConfiguration")
+parser.add_argument("-from_version","--fromVersion", help="Config version of fromConfiguration")
+parser.add_argument("-to_version","--toVersion", help="Config version of toConfiguration")
 parser.add_argument("-d","--download", help="Download configuration and display JSON in console", action="store_true")
 parser.add_argument("-ar","--addredirects", help="Append Redirect Rules from a csv File", action="store_true")
 parser.add_argument("-pc","--propertyCount", help="Count properties", action="store_true")
 parser.add_argument("-fmp","--ForwardPath", help="Add FMP Rules from a csv File", action="store_true")
+parser.add_argument("-clone","--cloneConfig", help="Clone a configuration", action="store_true")
+parser.add_argument("-delete","--deleteProperty", help="Delete a configuration", action="store_true")
+parser.add_argument("-ac","--advancedCheck", help="Check advanced matches", action="store_true")
 args = parser.parse_args()
 
 
 
 try:
     config = configparser.ConfigParser()
-    config.read('.config.txt')
+    config.read('config.txt')
     client_token = config['CREDENTIALS']['client_token']
     client_secret = config['CREDENTIALS']['client_secret']
     access_token = config['CREDENTIALS']['access_token']
@@ -44,10 +48,21 @@ except (NameError,AttributeError):
 
 if not args.copyConfig and not args.download and not args.activate and not args.addredirects and not \
     args.propertyCount and not args.ForwardPath and not args.fromConfiguration and not args.toConfiguration and not \
-    args.fromVersion and not args.toVersion and not args.Configuration and not args.Version and not args.network:
+    args.fromVersion and not args.toVersion and not args.Configuration and not args.Version and not args.network and not\
+    args.cloneConfig and not args.deleteProperty and not args.advancedCheck:
     print("\nUse -h to know the options to run program\n")
     exit()
 
+
+def getRuleNames(parentRule,parentruleName,propertyName,filehandler):
+    for eachRule in parentRule:
+        ruleName = parentruleName + " --> " + eachRule['name']
+        for eachCritera in eachRule['criteria']:
+            if eachCritera['name'] == 'matchAdvanced':
+                filehandler.writeChildRules('<b>' + 'Rule: ' + ruleName + '</b>')
+                filehandler.writeAnotherLine(eachCritera['options']['openXml'][1:-2])
+        if len(eachRule['children']) != 0:
+            getRuleNames(eachRule['children'],ruleName,propertyName,filehandler)
 
 if args.activate:
     print("\nHang on... while we activate configuration.. This will take time..\n")
@@ -83,6 +98,8 @@ if args.copyConfig:
 
 if args.download:
     print("\nSetting up the pre-requisites...\n")
+    property_name = args.Configuration
+    version = args.Version
     PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
     print("\nHang on... while we download the json data.. ")
     print("\nHang on... We are almost set, fetching the rules now.. This will take time..\n")
@@ -147,3 +164,65 @@ if args.propertyCount:
                     count += 1
         except KeyError:
             pass
+
+if args.cloneConfig:
+    property_name = args.fromConfiguration
+    new_property_name = args.toConfiguration
+    version = args.fromVersion
+    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    print("\nHang on... while we clone configuration.. ")
+    cloneResponse = PapiToolsObject.cloneConfig(session, property_name,new_property_name,version)
+    if cloneResponse.status_code == 200:
+        print('SUCCESS: ' + cloneResponse.json()['propertyLink'])
+    else:
+        print('FAILURE: ' + str(cloneResponse.json()))
+
+if args.deleteProperty:
+    property_name = args.Configuration
+    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    print("\nHang on... while we delete configuration.. ")
+    deleteResponse = PapiToolsObject.deleteProperty(session, property_name)
+    if deleteResponse.status_code == 200:
+        print('SUCCESS: ' + str(deleteResponse.json()))
+    else:
+        print('FAILURE: ' + str(deleteResponse.json()))
+
+if args.advancedCheck:
+    papiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    groupResponse = papiToolsObject.getGroups(session)
+    output_file_name = "advancedMdtCheck.html"
+    filehandler = generateHtml.htmlWriter(output_file_name)
+    filehandler.writeData(filehandler.start_data)
+    filehandler.writeData(filehandler.div_start_data)
+    propertyNameList = []
+    PropertyNumber = 1
+    for everyGroup in groupResponse.json()['groups']['items']:
+        try:
+            groupId = everyGroup['groupId']
+            contractId = everyGroup['contractIds'][0]
+            properties = papiToolsObject.getAllProperties(session, contractId, groupId)
+            for everyPropertyGroup in properties.json()['properties']['items']:
+                if everyPropertyGroup['propertyId'] not in propertyNameList:
+                    propertyName = everyPropertyGroup['propertyName']
+                    filehandler.writeData(filehandler.table_start_data)
+                    filehandler.writeTableHeader(str(PropertyNumber) + '. '+ propertyName)
+                    PropertyNumber += 1
+                    propertyNameList.append(everyPropertyGroup['propertyId'])
+                    print('Property: ' + propertyName + ' Under process\n')
+                    rulesUrlResponse = papiToolsObject.getPropertyRulesfromPropertyId(session, everyPropertyGroup['propertyId'], everyPropertyGroup['latestVersion'], everyPropertyGroup['contractId'], everyPropertyGroup['groupId'])
+                    rulesUrlJsonResponse = rulesUrlResponse.json()
+                    try:
+                        RulesList = rulesUrlJsonResponse['rules']['children']
+                        for eachRule in RulesList:
+                            for eachCritera in eachRule['criteria']:
+                                if eachCritera['name'] == 'matchAdvanced':
+                                    filehandler.writeChildRules('<b>' + 'Rule: ' + eachRule['name'] + '</b>' )
+                                    filehandler.writeAnotherLine(eachCritera['options']['openXml'][1:-2])
+                            if len(eachRule['children']) != 0:
+                                ruleName = eachRule['name']
+                                getRuleNames(eachRule['children'],ruleName,propertyName,filehandler)
+                    except KeyError:
+                        print("Looks like there are no rules other than default rule")
+        except KeyError:
+            print('Looks like No contract or group ID was fetched')
+    filehandler.writeData(filehandler.div_start_data)
