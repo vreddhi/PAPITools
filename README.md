@@ -29,7 +29,11 @@ import the module using pip install papitools
 **Example command to copy configurations:**
 Python3 CustomPAPIActions.py -copy -fconfig="source_config" -tconfig="destination_config" -fver=2 -tver=2
 
- - NOTE: 
+
+----------
+
+
+ **NOTE:** 
  CustomPAPIActions.py is a script that leverages papiTools.py
    and invokes funtions in them in certain order to achieve below
   
