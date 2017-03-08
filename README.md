@@ -21,9 +21,11 @@ import the module using pip install papitools
 
  
 **How to use it:**
-· Create an instance/object of Akamai EdgeGrid Session class.
-· Create an instance/object of papitools class
-· Call the above methods on papitools object, in desired order to achieve the functionality.
+
+ - · Create an instance/object of Akamai EdgeGrid Session class. 
+ - Create an instance/object of papitools class 
+ - Call the above methods on papitools object, in desired order to achieve the functionality.
+
  
  
 **Example command to copy configurations:**
