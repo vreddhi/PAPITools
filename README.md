@@ -29,19 +29,16 @@ import the module using pip install papitools
  - Call the above methods on papitools object, in desired order to achieve the functionality.
 
  
-
-**Example command to copy configurations:**
-Python3 CustomPAPIActions.py -copy -fconfig="source_config" -tconfig="destination_config" -fver=2 -tver=2
-
-
 ----------
 
 
  **NOTE:** 
  CustomPAPIActions.py is a script caller which i have been updating to cover various use-cases
- It is is a script that leverages papiTools.py
-   and invokes funtions in them in certain order to achieve below
-  
+
+**Example command to copy configurations:**
+Python3 CustomPAPIActions.py -copy -fconfig="source_config" -tconfig="destination_config" -fver=2 -tver=2 
+
+ It is is a script that leverages papiTools.py and invokes funtions in them in certain order to achieve below
  - activate  -- Activate a configuration     
  - copyConfig -- Copy the configuration     
  - addredirects  -- Add redirect rules from a csv file to a confguration  
