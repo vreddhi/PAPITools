@@ -18,6 +18,8 @@ import the module using pip install papitools
  - activateConfiguration  - Activate a configuration in STAGING or PRODUCTION
  - cloneConfig -- clone a configuration 
  - deleteProperty -- delete a configuration
+ - listProducts -- list all products under account
+ 
 
  
 **How to use it (PAPITools Wrapper):**
