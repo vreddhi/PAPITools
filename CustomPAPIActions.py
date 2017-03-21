@@ -10,6 +10,8 @@ import generateHtml
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-act","--activate", help="Activate configuration specified in property_name in .config.txt", action="store_true")
+parser.add_argument("-emails","--emails", help="Email ids to be notified")
+parser.add_argument("-notes","--notes", help="Email ids to be notified")
 parser.add_argument("-copy","--copyConfig", help="Used to copy source configuration to destination configuration", action="store_true")
 parser.add_argument("-config","--Configuration", help="Name of Configuration/Property")
 parser.add_argument("-version","--Version", help="Version of Configuration/Property")
@@ -25,6 +27,10 @@ parser.add_argument("-fmp","--ForwardPath", help="Add FMP Rules from a csv File"
 parser.add_argument("-clone","--cloneConfig", help="Clone a configuration", action="store_true")
 parser.add_argument("-delete","--deleteProperty", help="Delete a configuration", action="store_true")
 parser.add_argument("-fetchadvanced","--advancedCheck", help="Check advanced matches", action="store_true")
+parser.add_argument("-listproducts","--listproducts", help="List all the products in contract", action="store_true")
+parser.add_argument("-cloneConfigList","--cloneConfigList", help="Clone a list of configurations", action="store_true")
+parser.add_argument("-cloneAllConfig","--cloneAllConfig", help="Clone all configurations under account", action="store_true")
+
 args = parser.parse_args()
 
 
@@ -49,7 +55,8 @@ except (NameError,AttributeError):
 if not args.copyConfig and not args.download and not args.activate and not args.addredirects and not \
     args.propertyCount and not args.ForwardPath and not args.fromConfiguration and not args.toConfiguration and not \
     args.fromVersion and not args.toVersion and not args.Configuration and not args.Version and not args.network and not\
-    args.cloneConfig and not args.deleteProperty and not args.advancedCheck:
+    args.cloneConfig and not args.deleteProperty and not args.advancedCheck and not args.emails and not args.notes and not\
+    args.listproducts and not args.cloneConfigList and not args.cloneAllConfig:
     print("\nUse -h to know the options to run program\n")
     exit()
 
@@ -72,7 +79,10 @@ if args.activate:
     property_name = args.Configuration
     version = args.Version
     network = args.network
+    emails = args.emails
+    notes = args.notes
     activationResponseObj = PapiToolsObject.activateConfiguration(session, property_name, version, network, emails, notes)
+    print(json.dumps(activationResponseObj.json()))
 
 
 if args.copyConfig:
@@ -104,7 +114,7 @@ if args.download:
     print("\nHang on... while we download the json data.. ")
     print("\nHang on... We are almost set, fetching the rules now.. This will take time..\n")
     rulesObject = PapiToolsObject.getPropertyRules(session,property_name,version)
-    print(json.dumps(rulesObject.json()['rules']))
+    print(json.dumps(rulesObject.json()))
 
 if args.addredirects:
     csvTojsonObj = csvTojsonParser.optionSelector()
@@ -187,6 +197,10 @@ if args.deleteProperty:
     else:
         print('FAILURE: ' + str(deleteResponse.json()))
 
+if args.listproducts:
+    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    PapiToolsObject.listProducts(session)
+
 if args.advancedCheck:
     papiToolsObject = papitools.Papitools(access_hostname=access_hostname)
     groupResponse = papiToolsObject.getGroups(session)
@@ -226,3 +240,64 @@ if args.advancedCheck:
         except KeyError:
             print('Looks like No contract or group ID was fetched in one of the group Response')
     filehandler.writeData(filehandler.div_start_data)
+
+
+if args.cloneConfigList:
+    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    #Update the propertyNames or configuration names in below list
+    property_names = ['www-msci-uat','msci-support-cdn']
+    for propertyName in property_names:
+        new_property_name = propertyName + '_ionStd'
+        print('Hold on.. While we fetch the latest production version for ' + propertyName + '\n')
+        versionResponse = PapiToolsObject.getVersion(session, propertyName, activeOn="PRODUCTION")
+        if versionResponse.status_code != 404:
+            versionsList= versionResponse.json()['versions']['items']
+            for everyVersion in versionsList:
+                version = everyVersion['propertyVersion']
+            print('Latest production version of ' + propertyName + ' is ' + str(version))
+            print("\nHang on... while we clone configuration.. " + propertyName + '\n')
+            cloneResponse = PapiToolsObject.cloneConfig(session, propertyName,new_property_name,version)
+            if cloneResponse.status_code == 201:
+                print('SUCCESS: ' + new_property_name + 'is created. Here is the link to it' + cloneResponse.json()['propertyLink'] + '\n')
+            else:
+                print('FAILURE: ' + str(cloneResponse.json()))
+        else:
+            print(propertyName + ' was not cloned because it is not active in PRODUCTION. Try manually or report to developer')
+
+if args.cloneAllConfig:
+    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    groupResponse = PapiToolsObject.getGroups(session)
+    propertyNameList = [] #List to determine duplication of property names
+    PropertyNumber = 1
+    print('Fetching all properties\n')
+    for everyGroup in groupResponse.json()['groups']['items']:
+        try:
+            groupId = everyGroup['groupId']
+            contractId = everyGroup['contractIds'][0]
+            properties = PapiToolsObject.getAllProperties(session, contractId, groupId)
+            for everyPropertyGroup in properties.json()['properties']['items']:
+                if everyPropertyGroup['propertyName'] not in propertyNameList:
+                    propertyName = everyPropertyGroup['propertyName']
+                    PropertyNumber += 1
+                    propertyNameList.append(propertyName)
+                    print('Property: ' + propertyName + ' added to list of properties')
+        except KeyError:
+            print('Looks like No contract or group ID was fetched in one of the group Response')
+    #Below logic clones the configurations based on list populated above
+    for propertyName in propertyNameList:
+        new_property_name = propertyName + '_ionStd'
+        print('Hold on.. While we fetch the latest production version for ' + propertyName + '\n')
+        versionResponse = PapiToolsObject.getVersion(session, propertyName, activeOn="PRODUCTION")
+        if versionResponse.status_code != 404:
+            versionsList= versionResponse.json()['versions']['items']
+            for everyVersion in versionsList:
+                version = everyVersion['propertyVersion']
+            print('Latest production version of ' + propertyName + ' is ' + str(version))
+            print("\nHang on... while we clone configuration.. " + propertyName + '\n')
+            cloneResponse = PapiToolsObject.cloneConfig(session, propertyName,new_property_name,version)
+            if cloneResponse.status_code == 201:
+                print('SUCCESS: ' + new_property_name + 'is created. Here is the link to it' + cloneResponse.json()['propertyLink'] + '\n')
+            else:
+                print('FAILURE: ' + str(cloneResponse.json()))
+        else:
+            print(propertyName + ' was not cloned because it is not active in PRODUCTION. Try manually or report to developer')
