@@ -30,6 +30,7 @@ parser.add_argument("-fetchadvanced","--advancedCheck", help="Check advanced mat
 parser.add_argument("-listproducts","--listproducts", help="List all the products in contract", action="store_true")
 parser.add_argument("-cloneConfigList","--cloneConfigList", help="Clone a list of configurations", action="store_true")
 parser.add_argument("-cloneAllConfig","--cloneAllConfig", help="Clone all configurations under account", action="store_true")
+parser.add_argument("-updateSRTO","--updateSRTO", help="Clone all configurations under account", action="store_true")
 
 args = parser.parse_args()
 
@@ -56,7 +57,7 @@ if not args.copyConfig and not args.download and not args.activate and not args.
     args.propertyCount and not args.ForwardPath and not args.fromConfiguration and not args.toConfiguration and not \
     args.fromVersion and not args.toVersion and not args.Configuration and not args.Version and not args.network and not\
     args.cloneConfig and not args.deleteProperty and not args.advancedCheck and not args.emails and not args.notes and not\
-    args.listproducts and not args.cloneConfigList and not args.cloneAllConfig:
+    args.listproducts and not args.cloneConfigList and not args.cloneAllConfig and not args.updateSRTO:
     print("\nUse -h to know the options to run program\n")
     exit()
 
@@ -301,3 +302,25 @@ if args.cloneAllConfig:
                 print('FAILURE: ' + str(cloneResponse.json()))
         else:
             print(propertyName + ' was not cloned because it is not active in PRODUCTION. Try manually or report to developer')
+
+if args.updateSRTO:
+    property_name = args.Configuration
+    version = args.Version
+    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    print("\nHang on... while we download the json data.. ")
+    print("\nHang on... We are almost set, fetching the rules now.. This will take time..\n")
+    propertyJson = PapiToolsObject.getPropertyRules(session,property_name,version).json()
+    #print(json.dumps(propertyJson))
+    for everyChileRule in  propertyJson['rules']['children']:
+        if everyChileRule['name'] == 'Performance':
+            for everyBehavior in everyChileRule['behaviors']:
+                if everyBehavior['name'] == 'sureRoute':
+                    print(everyBehavior['options']['testObjectUrl'])
+                    everyBehavior['options']['testObjectUrl'] = '/changed/by/papi.html'
+    print("\nHang on... We are almost set, Updating with the rules now.. This will again take time..\n")
+    updateObjectResponse = PapiToolsObject.uploadRules(session, propertyJson,property_name, version)
+    print(updateObjectResponse.json())
+    print("\nLooks like it is done\n")
+
+    #updateObjectResponse = PapiToolsObject.uploadRules(session, propertyRules,property_name, version)
+    #print(updateObjectResponse.json())
