@@ -114,9 +114,9 @@ class Papitools(object):
         groupResponse = session.get(groupUrl)
         if groupResponse.status_code == 200:
             self.final_response = "SUCCESS"
-            return groupResponse
         else:
             self.final_response = "FAILURE"
+        return groupResponse
 
     def getAllProperties(self,session,contractId,groupId):
         """
@@ -389,7 +389,8 @@ class Papitools(object):
         for eachItem in versionResponse.json()['versions']['items']:
             if str(eachItem['propertyVersion']) == str(version):
                 versionEtag = eachItem['etag']
-                productId = eachItem['productId']
+                productId = "prd_Fresca"
+
 
         cloneData = """
         {
@@ -398,7 +399,7 @@ class Papitools(object):
             "cloneFrom": {
                 "propertyId"    : "%s",
                 "version"       : %s,
-                "copyHostnames" : false,
+                "copyHostnames" : true,
                 "cloneFromVersionEtag" : "%s"
             }
         }
@@ -437,3 +438,25 @@ class Papitools(object):
         else:
             self.final_response == "FAILURE"
         return deleteResponse
+
+    def listProducts(self,session):
+        """
+        Function to fetch all products
+
+        Parameters
+        ----------
+        session : <string>
+            An EdgeGrid Auth akamai session object
+
+        Returns
+        -------
+        productResponse : productResponse
+            (productResponse) Object with all response details.
+        """
+        contractsResponse = self.getContracts(session)
+        #print(json.dumps(contractsResponse.json()))
+        for everyItem in contractsResponse.json()['contracts']['items']:
+            contractId = everyItem['contractId']
+            productsUrl = 'https://' + self.access_hostname + '/papi/v0/products/?contractId=' + contractId
+            productsResponse = session.get(productsUrl)
+            print(json.dumps(productsResponse.json()))
