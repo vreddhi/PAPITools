@@ -36,7 +36,8 @@ parser.add_argument("-updateSRTO","--updateSRTO", help="Update the SRTO of surer
 parser.add_argument("-replaceString","--replaceString", help="Find and replace a string in configuration", action="store_true")
 parser.add_argument("-updateRuleSet","--updateRuleSet", help="Update rules set to latest version for all configurations in account", action="store_true")
 parser.add_argument("-checkErrors","--checkErrors", help="Check for errors in configurations", action="store_true")
-parser.add_argument("-behaviorStringCheck","--behaviorStringCheck", help="Clone all configurations under account", action="store_true")
+parser.add_argument("-findString","--findString", help="Find a string pattern in configuration", action="store_true")
+parser.add_argument("-stringToFind","--stringToFind", help="Find a string pattern in configuration")
 args = parser.parse_args()
 
 
@@ -63,7 +64,7 @@ if not args.copyConfig and not args.download and not args.activate and not args.
     args.fromVersion and not args.toVersion and not args.Configuration and not args.Version and not args.network and not\
     args.cloneConfig and not args.deleteProperty and not args.advancedCheck and not args.emails and not args.notes and not\
     args.listproducts and not args.cloneConfigList and not args.cloneAllConfig and not args.updateSRTO and not args.replaceString and not\
-    args.updateRuleSet and not args.checkErrors and not args.behaviorStringCheck:
+    args.updateRuleSet and not args.checkErrors and not args.findString and not args.stringToFind:
     print("\nUse -h to know the options to run program\n")
     exit()
 
@@ -391,7 +392,7 @@ if args.checkErrors:
         if 'errors'in ruleTreeResponse.json():
             print('Error Configuration: ' + propertyName )
 
-if args.behaviorStringCheck:
+if args.findString:
     papiToolsObject = papitools.Papitools(access_hostname=access_hostname)
     groupResponse = papiToolsObject.getGroups(session)
     output_file_name = "behaviorStringCheck.html"
@@ -411,10 +412,10 @@ if args.behaviorStringCheck:
                     propertyIdList.append(everyPropertyGroup['propertyId'])
                     print(str(PropertyNumber) + '. Property: ' + propertyName + ' Under process\n')
                     rulesUrlResponse = papiToolsObject.getPropertyRulesfromPropertyId(session, everyPropertyGroup['propertyId'], everyPropertyGroup['latestVersion'], everyPropertyGroup['contractId'], everyPropertyGroup['groupId'])
-                    if 'Authorization' in json.dumps(rulesUrlResponse.json()):
+                    if args.stringToFind in json.dumps(rulesUrlResponse.json()):
                         filehandler.writeData(filehandler.table_start_data)
                         filehandler.writeTableHeader(str(PropertyNumber) + '. '+ propertyName)
-                        filehandler.writeAnotherLine('Authorization Check is Found')
+                        filehandler.writeAnotherLine(args.findStringInConfig + ' is Found')
                         PropertyNumber += 1
                     else:
                         pass
