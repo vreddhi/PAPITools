@@ -10,6 +10,7 @@ class Papitools(object):
     headers = {
         "Content-Type": "application/json"
     }
+
     access_hostname = "mandatory"
     property_name = "optional"
     version = "optional"
@@ -65,7 +66,6 @@ class Papitools(object):
         self : self
             (Papitools) Object with propertyId, contractId and groupId as attributes
         """
-
         groupsInfo = self.getGroups(session)
         for eachDataGroup in groupsInfo.json()['groups']['items']:
             try:
@@ -450,8 +450,7 @@ class Papitools(object):
 
         Returns
         -------
-        productResponse : productResponse
-            (productResponse) Object with all response details.
+        Nothing: It rather prints the data
         """
         contractsResponse = self.getContracts(session)
         #print(json.dumps(contractsResponse.json()))
@@ -460,3 +459,70 @@ class Papitools(object):
             productsUrl = 'https://' + self.access_hostname + '/papi/v0/products/?contractId=' + contractId
             productsResponse = session.get(productsUrl)
             print(json.dumps(productsResponse.json()))
+
+
+    def listRuleFormats(self,session):
+        """
+        Function to Get a list of available rule formats
+
+        Parameters
+        ----------
+        session : <string>
+            An EdgeGrid Auth akamai session object
+
+        Returns
+        -------
+        ruleFomratResponse : ruleFomratResponse
+            (ruleFomratResponse) Object with all response details.
+        """
+        ruleFomratUrl = 'https://' + self.access_hostname + '/papi/v0/rule-formats'
+        ruleFomratResponse = session.get(ruleFomratUrl)
+        return ruleFomratResponse
+
+    def getRuleTree(self,session,property_name,version,latestTimeStamp='latest'):
+        """
+        Function to get the entire rule tree for a property version
+
+        Parameters
+        ----------
+        session : <string>
+            An EdgeGrid Auth akamai session object
+
+        Returns
+        -------
+        ruleTreeResponse : ruleTreeResponse
+            (ruleTreeResponse) Object with all response details.
+        """
+        #latestTimeStamp='latest' this is not a desired value, but can be used to fetch rule tree
+        AcceptValue = "application/vnd.akamai.papirules." + latestTimeStamp + "+json"
+        mime_header = {
+            "Accept": AcceptValue
+        }
+        self.getPropertyInfo(session, property_name)
+        '/papi/v0/properties/' + self.propertyId + '/versions/' + version + '/rules/?contractId=' + self.contractId + '&groupId=' + self.groupId
+        ruleTreeUrl = 'https://' + self.access_hostname + '/papi/v0/properties/' + self.propertyId + '/versions/' + version + '/rules/?contractId=' + self.contractId + '&groupId=' + self.groupId
+        ruleTreeResponse = session.get(ruleTreeUrl,headers=mime_header)
+        return ruleTreeResponse
+
+    def updateRuleTree(self,session,property_name,version,TimeStamp):
+        """
+        Function to update the entire rule tree for a property version to
+
+        Parameters
+        ----------
+        session : <string>
+            An EdgeGrid Auth akamai session object
+
+        Returns
+        -------
+        updateruleTreeResponse : ruleTreeResponse
+            (updateruleTreeResponse) Object with all response details.
+        """
+        mime_header = {
+            "Content-Type": "application/vnd.akamai.papirules.v2016-11-15+json"
+        }
+        self.getPropertyInfo(session, property_name)
+        '/papi/v0/properties/' + self.propertyId + '/versions/' + version + '/rules/?contractId=' + self.contractId + '&groupId=' + self.groupId
+        updateruleTreeUrl = 'https://' + self.access_hostname + '/papi/v0/properties/' + self.propertyId + '/versions/' + version + '/rules/?contractId=' + self.contractId + '&groupId=' + self.groupId
+        updateruleTreeResponse = session.put(updateruleTreeUrl,headers=mime_header)
+        return updateruleTreeResponse
