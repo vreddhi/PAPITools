@@ -23,7 +23,6 @@ import the module using pip install papitools
  - getRuleTree -- get the entire rule tree for a property version
  - updateRuleTree -- update the entire rule tree for a property version 
  
-
  
 **How to use it (PAPITools Wrapper):**
 
@@ -59,3 +58,14 @@ Python3 CustomPAPIActions.py -copy -fconfig="source_config" -tconfig="destinatio
  - checkErrors -- Check for errors in configurations
  - findString -- Find a string pattern in configuration
 
+# Pre-Requisites
+This will run in Python 3
+
+# It is dependent on following modules
+* configparser
+* json
+* requests
+* akamai.edgegrid
+* argparse
+
+# Use pip install <module_name>
