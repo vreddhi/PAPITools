@@ -1,3 +1,10 @@
+'''
+// I dedicate all this code, all my work, to my wife, who will
+// have to support me once it gets released into the public.
+Author: Vreddhi Bhat
+Contact: vbhat@akamai.com
+'''
+
 import papitools
 import configparser
 import requests, logging, json, sys
@@ -44,7 +51,7 @@ args = parser.parse_args()
 
 try:
     config = configparser.ConfigParser()
-    config.read('config_BBY.txt')
+    config.read('config_MSIC.txt')
     client_token = config['CREDENTIALS']['client_token']
     client_secret = config['CREDENTIALS']['client_secret']
     access_token = config['CREDENTIALS']['access_token']
