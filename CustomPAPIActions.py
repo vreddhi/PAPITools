@@ -415,7 +415,7 @@ if args.findString:
                     if args.stringToFind in json.dumps(rulesUrlResponse.json()):
                         filehandler.writeData(filehandler.table_start_data)
                         filehandler.writeTableHeader(str(PropertyNumber) + '. '+ propertyName)
-                        filehandler.writeAnotherLine(args.findStringInConfig + ' is Found')
+                        filehandler.writeAnotherLine(args.stringToFind + ' is Found')
                         PropertyNumber += 1
                     else:
                         pass
