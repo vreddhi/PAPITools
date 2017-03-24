@@ -57,5 +57,5 @@ Python3 CustomPAPIActions.py -copy -fconfig="source_config" -tconfig="destinatio
  - replaceString -- Find and replace a string in configuration
  - updateRuleSet -- Update rules set to latest version for all configurations in account
  - checkErrors -- Check for errors in configurations
- - behaviorStringCheck -- Clone all configurations under account
+ - findString -- Find a string pattern in configuration
 
