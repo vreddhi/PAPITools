@@ -1,3 +1,10 @@
+'''
+// I dedicate all this code, all my work, to my wife, who will
+// have to support me once it gets released into the public.
+Author: Vreddhi Bhat
+Contact: vbhat@akamai.com
+'''
+
 import json
 
 
