@@ -19,6 +19,9 @@ import the module using pip install papitools
  - cloneConfig -- clone a configuration 
  - deleteProperty -- delete a configuration
  - listProducts -- list all products under account
+ - listRuleFormats -- list of available rule formats
+ - getRuleTree -- get the entire rule tree for a property version
+ - updateRuleTree -- update the entire rule tree for a property version 
  
 
  
@@ -51,4 +54,8 @@ Python3 CustomPAPIActions.py -copy -fconfig="source_config" -tconfig="destinatio
  - cloneConfigList -- clones a list of configurations and updates the productType to Ion
  - cloneAllConfig -- clones all configurations under account and updates the productType to Ion
  - updateSRTO -- updates the STRO object path
+ - replaceString -- Find and replace a string in configuration
+ - updateRuleSet -- Update rules set to latest version for all configurations in account
+ - checkErrors -- Check for errors in configurations
+ - behaviorStringCheck -- Clone all configurations under account
 
