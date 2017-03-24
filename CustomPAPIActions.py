@@ -8,6 +8,8 @@ import argparse
 import generateHtml
 #Program start here
 
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument("-act","--activate", help="Activate configuration specified in property_name in .config.txt", action="store_true")
 parser.add_argument("-emails","--emails", help="Email ids to be notified")
@@ -30,15 +32,18 @@ parser.add_argument("-fetchadvanced","--advancedCheck", help="Check advanced mat
 parser.add_argument("-listproducts","--listproducts", help="List all the products in contract", action="store_true")
 parser.add_argument("-cloneConfigList","--cloneConfigList", help="Clone a list of configurations", action="store_true")
 parser.add_argument("-cloneAllConfig","--cloneAllConfig", help="Clone all configurations under account", action="store_true")
-parser.add_argument("-updateSRTO","--updateSRTO", help="Clone all configurations under account", action="store_true")
-
+parser.add_argument("-updateSRTO","--updateSRTO", help="Update the SRTO of sureroute in a configuration", action="store_true")
+parser.add_argument("-replaceString","--replaceString", help="Find and replace a string in configuration", action="store_true")
+parser.add_argument("-updateRuleSet","--updateRuleSet", help="Update rules set to latest version for all configurations in account", action="store_true")
+parser.add_argument("-checkErrors","--checkErrors", help="Check for errors in configurations", action="store_true")
+parser.add_argument("-behaviorStringCheck","--behaviorStringCheck", help="Clone all configurations under account", action="store_true")
 args = parser.parse_args()
 
 
 
 try:
     config = configparser.ConfigParser()
-    config.read('config.txt')
+    config.read('config_BBY.txt')
     client_token = config['CREDENTIALS']['client_token']
     client_secret = config['CREDENTIALS']['client_secret']
     access_token = config['CREDENTIALS']['access_token']
@@ -57,7 +62,8 @@ if not args.copyConfig and not args.download and not args.activate and not args.
     args.propertyCount and not args.ForwardPath and not args.fromConfiguration and not args.toConfiguration and not \
     args.fromVersion and not args.toVersion and not args.Configuration and not args.Version and not args.network and not\
     args.cloneConfig and not args.deleteProperty and not args.advancedCheck and not args.emails and not args.notes and not\
-    args.listproducts and not args.cloneConfigList and not args.cloneAllConfig and not args.updateSRTO:
+    args.listproducts and not args.cloneConfigList and not args.cloneAllConfig and not args.updateSRTO and not args.replaceString and not\
+    args.updateRuleSet and not args.checkErrors and not args.behaviorStringCheck:
     print("\nUse -h to know the options to run program\n")
     exit()
 
@@ -322,5 +328,99 @@ if args.updateSRTO:
     print(updateObjectResponse.json())
     print("\nLooks like it is done\n")
 
-    #updateObjectResponse = PapiToolsObject.uploadRules(session, propertyRules,property_name, version)
-    #print(updateObjectResponse.json())
+if args.replaceString:
+    print("\nSetting up the pre-requisites...\n")
+    property_name = args.Configuration
+    version = args.Version
+    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    print("\nHang on... while we download the json data.. ")
+    print("\nHang on... We are almost set, fetching the rules now.. This will take time..\n")
+    propertyJson = PapiToolsObject.getPropertyRules(session,property_name,version).json()
+    updatedpropertyJson = json.loads(json.dumps(propertyJson).replace("browse-east.cloud-test.bestbuy.com.akadns.net", "web-east.test.browse.bestbuy.com"))
+    updateObjectResponse = PapiToolsObject.uploadRules(session, updatedpropertyJson,property_name, version)
+    print(json.dumps(updateObjectResponse.json()))
+    print("\nLooks like it is done\n")
+
+if args.updateRuleSet:
+    print("\nSetting up the pre-requisites...\n")
+    property_name = args.Configuration
+    version = args.Version
+    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    print("\nHang on... while we download the json data.. ")
+    print("\nHang on... We are almost set, fetching the rules now.. This will take time..\n")
+    ruleFormatResponse = PapiToolsObject.listRuleFormats(session)
+    latestTimeStamp = ''
+    for everyItem in ruleFormatResponse.json()['ruleFormats']['items']:
+        if everyItem[1:5] == '2016':
+            latestTimeStamp = everyItem
+    ruleTreeResponse = PapiToolsObject.getRuleTree(session, property_name, version,latestTimeStamp)
+    print(json.dumps(ruleTreeResponse.json()))
+    print("Successfully retrieved the rules Tree, we now need to try upgrading it to latest version")
+    updateruleTreeResponse = PapiToolsObject.updateRuleTree(session, property_name, version, latestTimeStamp)
+    print(str(updateruleTreeResponse.status_code))
+    print(json.dumps(updateruleTreeResponse.json()))
+
+if args.checkErrors:
+    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    groupResponse = PapiToolsObject.getGroups(session)
+    propertyNameList = [] #List to determine duplication of property names
+    PropertyNumber = 1
+    ruleFormatResponse = PapiToolsObject.listRuleFormats(session)
+    latestTimeStamp = ''
+    for everyItem in ruleFormatResponse.json()['ruleFormats']['items']:
+        if everyItem[1:5] == '2016':
+            latestTimeStamp = everyItem
+    print('Fetching all properties\n')
+    for everyGroup in groupResponse.json()['groups']['items']:
+        try:
+            groupId = everyGroup['groupId']
+            contractId = everyGroup['contractIds'][0]
+            properties = PapiToolsObject.getAllProperties(session, contractId, groupId)
+            for everyPropertyGroup in properties.json()['properties']['items']:
+                if everyPropertyGroup['propertyName'] not in propertyNameList:
+                    propertyName = everyPropertyGroup['propertyName']
+                    PropertyNumber += 1
+                    if propertyName.endswith('_ionStd'):
+                        propertyNameList.append(propertyName)
+                        print('Property: ' + propertyName + ' added to list of properties')
+        except KeyError:
+            print('Looks like No contract or group ID was fetched in one of the group Response')
+    #Below logic clones the configurations based on list populated above
+    for propertyName in propertyNameList:
+        ruleTreeResponse = PapiToolsObject.getRuleTree(session, propertyName,'1',latestTimeStamp)
+        if 'errors'in ruleTreeResponse.json():
+            print('Error Configuration: ' + propertyName )
+
+if args.behaviorStringCheck:
+    papiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    groupResponse = papiToolsObject.getGroups(session)
+    output_file_name = "behaviorStringCheck.html"
+    filehandler = generateHtml.htmlWriter(output_file_name)
+    filehandler.writeData(filehandler.start_data)
+    filehandler.writeData(filehandler.div_start_data)
+    propertyIdList = []
+    PropertyNumber = 1
+    for everyGroup in groupResponse.json()['groups']['items']:
+        try:
+            groupId = everyGroup['groupId']
+            contractId = everyGroup['contractIds'][0]
+            properties = papiToolsObject.getAllProperties(session, contractId, groupId)
+            for everyPropertyGroup in properties.json()['properties']['items']:
+                if everyPropertyGroup['propertyId'] not in propertyIdList:
+                    propertyName = everyPropertyGroup['propertyName']
+                    propertyIdList.append(everyPropertyGroup['propertyId'])
+                    print(str(PropertyNumber) + '. Property: ' + propertyName + ' Under process\n')
+                    rulesUrlResponse = papiToolsObject.getPropertyRulesfromPropertyId(session, everyPropertyGroup['propertyId'], everyPropertyGroup['latestVersion'], everyPropertyGroup['contractId'], everyPropertyGroup['groupId'])
+                    if 'Authorization' in json.dumps(rulesUrlResponse.json()):
+                        filehandler.writeData(filehandler.table_start_data)
+                        filehandler.writeTableHeader(str(PropertyNumber) + '. '+ propertyName)
+                        filehandler.writeAnotherLine('Authorization Check is Found')
+                        PropertyNumber += 1
+                    else:
+                        pass
+        except KeyError:
+            print('Looks like No contract or group ID was fetched in one of the group Response')
+    filehandler.writeData(filehandler.div_end_data)
+
+
+print('\n**********DONE**********')
