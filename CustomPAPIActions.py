@@ -45,6 +45,15 @@ parser.add_argument("-updateRuleSet","--updateRuleSet", help="Update rules set t
 parser.add_argument("-checkErrors","--checkErrors", help="Check for errors in configurations", action="store_true")
 parser.add_argument("-findString","--findString", help="Find a string pattern in configuration", action="store_true")
 parser.add_argument("-stringToFind","--stringToFind", help="Find a string pattern in configuration")
+parser.add_argument("-activateConfigs","--activateConfigs", help="Activate configurations specified in a list", action="store_true")
+parser.add_argument("-removeBehavior","--removeBehavior", help="Activate configurations specified in a list")
+parser.add_argument("-createVersion","--createVersion", help="Create a new configurataion version",action="store_true")
+
+
+#DNS
+parser.add_argument("-dnstest", help="Activate configurations specified in a list",action="store_true")
+
+
 args = parser.parse_args()
 
 
@@ -62,6 +71,7 @@ try:
     			client_secret = client_secret,
     			access_token = access_token
                 )
+    print('Establishing Connection')
 except (NameError,AttributeError):
     print("\nUse -h to know the options to run program\n")
     exit()
@@ -71,7 +81,8 @@ if not args.copyConfig and not args.download and not args.activate and not args.
     args.fromVersion and not args.toVersion and not args.Configuration and not args.Version and not args.network and not\
     args.cloneConfig and not args.deleteProperty and not args.advancedCheck and not args.emails and not args.notes and not\
     args.listproducts and not args.cloneConfigList and not args.cloneAllConfig and not args.updateSRTO and not args.replaceString and not\
-    args.updateRuleSet and not args.checkErrors and not args.findString and not args.stringToFind:
+    args.updateRuleSet and not args.checkErrors and not args.findString and not args.stringToFind and not args.activateConfigs and not\
+    args.removeBehavior and not args.dnstest and not args.createVersion:
     print("\nUse -h to know the options to run program\n")
     exit()
 
@@ -99,6 +110,39 @@ if args.activate:
     activationResponseObj = PapiToolsObject.activateConfiguration(session, property_name, version, network, emails, notes)
     print(json.dumps(activationResponseObj.json()))
 
+
+if args.activateConfigs:
+    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    #Update the propertyNames or configuration names in below list
+    property_names = ["managed-test.bestbuy.com_pm" ,"managed-test-ssl.bestbuy.com" ,"www.stage.bestbuy.com_pm","www-ssl.stage.bestbuy.com_pm"]
+    for propertyName in property_names:
+        print("\nTrying to activate configuration.. " + propertyName + "\n")
+        property_name = propertyName
+        versionResponse = PapiToolsObject.getVersion(session, propertyName)
+        if versionResponse.status_code != 404:
+            versionsList= versionResponse.json()['versions']['items']
+            for everyVersion in versionsList:
+                version = everyVersion['propertyVersion']
+            print('Latest production version of ' + propertyName + ' is ' + str(version))
+            print("\nHang on... while we activate the configuration.. " + propertyName + '\n')
+            network = 'STAGING'
+            emails = 'vbhat@akamai.com'
+            notes = 'Activating configuration via script'
+            activationResponseObj = PapiToolsObject.activateConfiguration(session, property_name, version, network, emails, notes)
+            print(json.dumps(activationResponseObj.json()))
+        else:
+            print(propertyName + ' version not found')
+            print(print(json.dumps(versionResponse.json())))
+
+if args.createVersion:
+    print("\nHang on... while we activate configuration.. This will take time..\n")
+    print("\nSetting up the pre-requisites...\n")
+    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    print("\nTrying to activate configuration..\n")
+    property_name = args.Configuration
+    baseVersion = args.Version
+    createVersionResponseObj = PapiToolsObject.createVersion(session, baseVersion, property_name)
+    print(json.dumps(createVersionResponseObj.json()))
 
 if args.copyConfig:
     #Initialise Source Property Information
@@ -411,24 +455,45 @@ if args.findString:
     for everyGroup in groupResponse.json()['groups']['items']:
         try:
             groupId = everyGroup['groupId']
-            contractId = everyGroup['contractIds'][0]
-            properties = papiToolsObject.getAllProperties(session, contractId, groupId)
-            for everyPropertyGroup in properties.json()['properties']['items']:
-                if everyPropertyGroup['propertyId'] not in propertyIdList:
-                    propertyName = everyPropertyGroup['propertyName']
-                    propertyIdList.append(everyPropertyGroup['propertyId'])
-                    print(str(PropertyNumber) + '. Property: ' + propertyName + ' Under process\n')
-                    rulesUrlResponse = papiToolsObject.getPropertyRulesfromPropertyId(session, everyPropertyGroup['propertyId'], everyPropertyGroup['latestVersion'], everyPropertyGroup['contractId'], everyPropertyGroup['groupId'])
-                    if args.stringToFind in json.dumps(rulesUrlResponse.json()):
-                        filehandler.writeData(filehandler.table_start_data)
-                        filehandler.writeTableHeader(str(PropertyNumber) + '. '+ propertyName)
-                        filehandler.writeAnotherLine(args.stringToFind + ' is Found')
-                        PropertyNumber += 1
-                    else:
-                        pass
+            for contractId in everyGroup['contractIds']:
+                properties = papiToolsObject.getAllProperties(session, contractId, groupId)
+                for everyPropertyGroup in properties.json()['properties']['items']:
+                    if everyPropertyGroup['propertyId'] not in propertyIdList:
+                        propertyName = everyPropertyGroup['propertyName']
+                        propertyIdList.append(everyPropertyGroup['propertyId'])
+                        print(str(PropertyNumber) + '. Property: ' + propertyName + ' Under process\n')
+                        rulesUrlResponse = papiToolsObject.getPropertyRulesfromPropertyId(session, everyPropertyGroup['propertyId'], everyPropertyGroup['latestVersion'], everyPropertyGroup['contractId'], everyPropertyGroup['groupId'])
+                        propertyRulesText = json.dumps(rulesUrlResponse.json())
+                        if args.stringToFind in propertyRulesText and 'application/json*' not in propertyRulesText:
+                            filehandler.writeData(filehandler.table_start_data)
+                            filehandler.writeTableHeader(str(PropertyNumber) + '. '+ propertyName)
+                            filehandler.writeAnotherLine(args.stringToFind + ' is Found')
+                            PropertyNumber += 1
+                        else:
+                            pass
         except KeyError:
             print('Looks like No contract or group ID was fetched in one of the group Response')
     filehandler.writeData(filehandler.div_end_data)
 
 
-print('\n**********DONE**********')
+if args.removeBehavior:
+    behaviorName = args.removeBehavior
+    print("\nSetting up the pre-requisites...\n")
+    property_name = args.Configuration
+    version = args.Version
+    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    print("\nHang on... while we download the json data.. ")
+    print("\nHang on... We are almost set, fetching the rules now.. This will take time..\n")
+    propertyJson = PapiToolsObject.getPropertyRules(session,property_name,version).json()
+    new_Behaviorlist = [behavior for behavior in propertyJson['rules']['behaviors'] if behavior['name'] != behaviorName]
+    propertyJson['rules']['behaviors'] = new_Behaviorlist #Assign it Back to same object in memory
+    updateObjectResponse = PapiToolsObject.uploadRules(session, propertyJson,property_name, version)
+    print("\nLooks like it is done\n")
+
+
+if args.dnstest:
+    dnsUrl = 'https://' + access_hostname + '/data-dns/v1/traffic/vistaprint.com?start=20170417&start_time=16:00&end=20170417&end_time=16:30'
+    response = session.get(dnsUrl)
+    print(response.text)
+
+#print('\n**********DONE**********')
