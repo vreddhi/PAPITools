@@ -76,25 +76,26 @@ class Papitools(object):
         groupsInfo = self.getGroups(session)
         for eachDataGroup in groupsInfo.json()['groups']['items']:
             try:
-                contractId = [eachDataGroup['contractIds'][0]]
-                groupId = [eachDataGroup['groupId']]
-                url = 'https://' + self.access_hostname + '/papi/v0/properties/?contractId=' + contractId[0] +'&groupId=' + groupId[0]
-                propertiesResponse = session.get(url)
-                if propertiesResponse.status_code == 200:
-                    propertiesResponseJson = propertiesResponse.json()
-                    propertiesList = propertiesResponseJson['properties']['items']
-                    for propertyInfo in propertiesList:
-                        propertyName = propertyInfo['propertyName']
-                        propertyId = propertyInfo['propertyId']
-                        propertyContractId = propertyInfo['contractId']
-                        propertyGroupId = propertyInfo['groupId']
-                        if propertyName == property_name or propertyName == property_name + ".xml":
-                            #Update the self attributes with correct values
-                            self.groupId = propertyGroupId
-                            self.contractId = propertyContractId
-                            self.propertyId = propertyId
-                            self.final_response = "SUCCESS"
-                            return self
+                contractIdList = eachDataGroup['contractIds']
+                for contractId in contractIdList:
+                    groupId = eachDataGroup['groupId']
+                    url = 'https://' + self.access_hostname + '/papi/v0/properties/?contractId=' + contractId +'&groupId=' + groupId
+                    propertiesResponse = session.get(url)
+                    if propertiesResponse.status_code == 200:
+                        propertiesResponseJson = propertiesResponse.json()
+                        propertiesList = propertiesResponseJson['properties']['items']
+                        for propertyInfo in propertiesList:
+                            propertyName = propertyInfo['propertyName']
+                            propertyId = propertyInfo['propertyId']
+                            propertyContractId = propertyInfo['contractId']
+                            propertyGroupId = propertyInfo['groupId']
+                            if propertyName == property_name or propertyName == property_name + ".xml":
+                                #Update the self attributes with correct values
+                                self.groupId = propertyGroupId
+                                self.contractId = propertyContractId
+                                self.propertyId = propertyId
+                                self.final_response = "SUCCESS"
+                                return self
             except KeyError:
                 pass
         #Return the self as it is without updated information
