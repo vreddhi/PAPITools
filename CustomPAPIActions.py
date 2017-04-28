@@ -5,7 +5,7 @@ Author: Vreddhi Bhat
 Contact: vbhat@akamai.com
 '''
 
-import papitools
+from papitools.papitools import Papitools
 import configparser
 import requests, logging, json, sys
 from akamai.edgegrid import EdgeGridAuth
@@ -100,7 +100,7 @@ def getRuleNames(parentRule,parentruleName,propertyName,filehandler):
 if args.activate:
     print("\nHang on... while we activate configuration.. This will take time..\n")
     print("\nSetting up the pre-requisites...\n")
-    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    PapiToolsObject = Papitools(access_hostname=access_hostname)
     print("\nTrying to activate configuration..\n")
     property_name = args.Configuration
     version = args.Version
@@ -112,7 +112,7 @@ if args.activate:
 
 
 if args.activateConfigs:
-    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    PapiToolsObject = Papitools(access_hostname=access_hostname)
     #Update the propertyNames or configuration names in below list
     property_names = ["managed-test.bestbuy.com_pm" ,"managed-test-ssl.bestbuy.com" ,"www.stage.bestbuy.com_pm","www-ssl.stage.bestbuy.com_pm"]
     for propertyName in property_names:
@@ -137,7 +137,7 @@ if args.activateConfigs:
 if args.createVersion:
     print("\nHang on... while we activate configuration.. This will take time..\n")
     print("\nSetting up the pre-requisites...\n")
-    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    PapiToolsObject = Papitools(access_hostname=access_hostname)
     print("\nTrying to activate configuration..\n")
     property_name = args.Configuration
     baseVersion = args.Version
@@ -154,7 +154,7 @@ if args.copyConfig:
     if fromVersion is None or toVersion is None or fromConfiguration is None or toConfiguration is None:
         print('\nMandatory arguments missing\n')
         exit()
-    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    PapiToolsObject = Papitools(access_hostname=access_hostname)
     fromRulesObject = PapiToolsObject.getPropertyRules(session, fromConfiguration, fromVersion)
     if fromRulesObject.status_code != 200:
         print(fromRulesObject.json())
@@ -169,7 +169,7 @@ if args.download:
     print("\nSetting up the pre-requisites...\n")
     property_name = args.Configuration
     version = args.Version
-    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    PapiToolsObject = Papitools(access_hostname=access_hostname)
     print("\nHang on... while we download the json data.. ")
     print("\nHang on... We are almost set, fetching the rules now.. This will take time..\n")
     rulesObject = PapiToolsObject.getPropertyRules(session,property_name,version)
@@ -196,7 +196,7 @@ if args.ForwardPath:
     print("\nConvert csv to Json is finished.. ")
     print("\nSetting up the pre-requisites...\n")
     FMPJsonData = csvTojsonObj.parseCSVFile()
-    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    PapiToolsObject = Papitools(access_hostname=access_hostname)
     print("\nHang on... while we download the json data.. ")
     print("\nHang on... We are almost set, fetching the rules now.. This will take time..\n")
     propertyRules = PapiToolsObject.getPropertyRules(session,property_name,version).json()
@@ -238,7 +238,7 @@ if args.cloneConfig:
     property_name = args.fromConfiguration
     new_property_name = args.toConfiguration
     version = args.fromVersion
-    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    PapiToolsObject = Papitools(access_hostname=access_hostname)
     print("\nHang on... while we clone configuration.. ")
     cloneResponse = PapiToolsObject.cloneConfig(session, property_name,new_property_name,version)
     if cloneResponse.status_code == 200:
@@ -248,7 +248,7 @@ if args.cloneConfig:
 
 if args.deleteProperty:
     property_name = args.Configuration
-    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    PapiToolsObject = Papitools(access_hostname=access_hostname)
     print("\nHang on... while we delete configuration.. ")
     deleteResponse = PapiToolsObject.deleteProperty(session, property_name)
     if deleteResponse.status_code == 200:
@@ -257,11 +257,11 @@ if args.deleteProperty:
         print('FAILURE: ' + str(deleteResponse.json()))
 
 if args.listproducts:
-    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    PapiToolsObject = Papitools(access_hostname=access_hostname)
     PapiToolsObject.listProducts(session)
 
 if args.advancedCheck:
-    papiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    papiToolsObject = Papitools(access_hostname=access_hostname)
     groupResponse = papiToolsObject.getGroups(session)
     output_file_name = "advancedMdtCheck.html"
     filehandler = generateHtml.htmlWriter(output_file_name)
@@ -302,7 +302,7 @@ if args.advancedCheck:
 
 
 if args.cloneConfigList:
-    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    PapiToolsObject = Papitools(access_hostname=access_hostname)
     #Update the propertyNames or configuration names in below list
     property_names = ['www-msci-uat','msci-support-cdn']
     for propertyName in property_names:
@@ -324,7 +324,7 @@ if args.cloneConfigList:
             print(propertyName + ' was not cloned because it is not active in PRODUCTION. Try manually or report to developer')
 
 if args.cloneAllConfig:
-    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    PapiToolsObject = Papitools(access_hostname=access_hostname)
     groupResponse = PapiToolsObject.getGroups(session)
     propertyNameList = [] #List to determine duplication of property names
     PropertyNumber = 1
@@ -364,7 +364,7 @@ if args.cloneAllConfig:
 if args.updateSRTO:
     property_name = args.Configuration
     version = args.Version
-    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    PapiToolsObject = Papitools(access_hostname=access_hostname)
     print("\nHang on... while we download the json data.. ")
     print("\nHang on... We are almost set, fetching the rules now.. This will take time..\n")
     propertyJson = PapiToolsObject.getPropertyRules(session,property_name,version).json()
@@ -374,7 +374,7 @@ if args.updateSRTO:
             for everyBehavior in everyChileRule['behaviors']:
                 if everyBehavior['name'] == 'sureRoute':
                     print(everyBehavior['options']['testObjectUrl'])
-                    everyBehavior['options']['testObjectUrl'] = '/changed/by/papi.html'
+                    everyBehavior['options']['testObjectUrl'] = '/changed/again/by/papi.html'
     print("\nHang on... We are almost set, Updating with the rules now.. This will again take time..\n")
     updateObjectResponse = PapiToolsObject.uploadRules(session, propertyJson,property_name, version)
     print(updateObjectResponse.json())
@@ -384,7 +384,7 @@ if args.replaceString:
     print("\nSetting up the pre-requisites...\n")
     property_name = args.Configuration
     version = args.Version
-    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    PapiToolsObject = Papitools(access_hostname=access_hostname)
     print("\nHang on... while we download the json data.. ")
     print("\nHang on... We are almost set, fetching the rules now.. This will take time..\n")
     propertyJson = PapiToolsObject.getPropertyRules(session,property_name,version).json()
@@ -397,7 +397,7 @@ if args.updateRuleSet:
     print("\nSetting up the pre-requisites...\n")
     property_name = args.Configuration
     version = args.Version
-    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    PapiToolsObject = Papitools(access_hostname=access_hostname)
     print("\nHang on... while we download the json data.. ")
     print("\nHang on... We are almost set, fetching the rules now.. This will take time..\n")
     ruleFormatResponse = PapiToolsObject.listRuleFormats(session)
@@ -413,7 +413,7 @@ if args.updateRuleSet:
     print(json.dumps(updateruleTreeResponse.json()))
 
 if args.checkErrors:
-    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    PapiToolsObject = Papitools(access_hostname=access_hostname)
     groupResponse = PapiToolsObject.getGroups(session)
     propertyNameList = [] #List to determine duplication of property names
     PropertyNumber = 1
@@ -444,7 +444,7 @@ if args.checkErrors:
             print('Error Configuration: ' + propertyName )
 
 if args.findString:
-    papiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    papiToolsObject = Papitools(access_hostname=access_hostname)
     groupResponse = papiToolsObject.getGroups(session)
     output_file_name = "behaviorStringCheck.html"
     filehandler = generateHtml.htmlWriter(output_file_name)
@@ -481,7 +481,7 @@ if args.removeBehavior:
     print("\nSetting up the pre-requisites...\n")
     property_name = args.Configuration
     version = args.Version
-    PapiToolsObject = papitools.Papitools(access_hostname=access_hostname)
+    PapiToolsObject = Papitools(access_hostname=access_hostname)
     print("\nHang on... while we download the json data.. ")
     print("\nHang on... We are almost set, fetching the rules now.. This will take time..\n")
     propertyJson = PapiToolsObject.getPropertyRules(session,property_name,version).json()
