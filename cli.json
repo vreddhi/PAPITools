@@ -7,7 +7,7 @@
       "name": "property",
       "version": "0.1.0",
       "description": "Different actions on property",
-      "bin": "https://github.com/vreddhi/PAPITools/blob/master/CustomPAPIActions.py"
+      "bin": "https://github.com/vreddhi/PAPITools"
     }
   ]
 }
